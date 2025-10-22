@@ -12,7 +12,7 @@ func NewQTablam(titles []string, data [][]string) *qt.QWidget {
 	pointingHandCursor = qt.NewQCursor2(qt.CursorShape(qt.PointingHandCursor))
 
 	defFont = DefaultFont()
-	fontData = newFontData()
+	fontData = NewFontData()
 
 	// Draw area
 	initColumns(titles)

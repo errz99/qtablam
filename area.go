@@ -30,8 +30,8 @@ var (
 	cursorColor = [4]int{255, 251, 100, 127}
 	selColor    = [4]int{200, 200, 200, 127}
 
-	defFont  string
-	fontData MyFontData
+	DefFont  string
+	FontData MyFontData
 
 	columns    = make([]Column, 0, 8)
 	fieldsMenu *qt.QMenu
@@ -102,7 +102,7 @@ func (da *DrawArea) UpdateColsWidth() {
 	var colsWidth int
 	for _, col := range columns {
 		if col.visible {
-			colsWidth += col.width*fontData.w + centerArea.colSep
+			colsWidth += col.width*FontData.W + centerArea.colSep
 		}
 	}
 	if colsWidth < da.width {
@@ -113,7 +113,7 @@ func (da *DrawArea) UpdateColsWidth() {
 }
 
 func (da *DrawArea) UpdateRows() {
-	da.rows = da.height / (fontData.h + da.rowSep)
+	da.rows = da.height / (FontData.H + da.rowSep)
 }
 
 func (da *DrawArea) ResizeUpdate(newWidth, newHeight int) {
@@ -222,9 +222,9 @@ func (da *DrawArea) Draw() {
 	cursorPen := qt.NewQPen3(myQColor(cursorColor))
 	// selPen := qt.NewQPen3(myQColor(selColor))
 
-	font := fontData.font
-	fontw := float64(fontData.w)
-	fonth := float64(fontData.h)
+	font := FontData.Font
+	fontw := float64(FontData.W)
+	fonth := float64(FontData.H)
 
 	scene := da.Scene()
 	scene.Clear()
@@ -282,7 +282,7 @@ func (da *DrawArea) Draw() {
 
 	drawRec := func(pen *qt.QPen, vpos float64) {
 		y := vpos + ysep - float64(da.rowSep) + recPadding
-		h := float64(fontData.h+da.rowSep) - recPadding*2
+		h := float64(FontData.H+da.rowSep) - recPadding*2
 		scene.AddRect6(offx, y, float64(da.width)-offx*2, h, pen, pen.Brush())
 	}
 
