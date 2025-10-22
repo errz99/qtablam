@@ -2,7 +2,7 @@ package qtablam
 
 import (
 	// "fmt"
-	// "slices"
+	"slices"
 	"unicode/utf8"
 
 	"github.com/mappu/miqt/qt"
@@ -31,8 +31,10 @@ var (
 	DefFont  string
 	FontData MyFontData
 
-	columns    = make([]Column, 0, 8)
-	fieldsMenu *qt.QMenu
+	columns         = make([]Column, 0, 8)
+	fieldsMenu      *qt.QMenu
+	ModifierControl = qt.NoModifier
+	showDataTable   = true
 )
 
 type Column struct {
@@ -60,24 +62,36 @@ func initColumns(titles []string) {
 	}
 }
 
+type Row struct {
+	ID    int
+	texts []string
+}
+
 type DrawArea struct {
 	*qt.QGraphicsView
-	width     int
-	height    int
-	colSep    int
-	rowSep    int
-	offx      int
-	rows      int
-	rowOff    int
-	offInc    int
-	cursorPos int
-	data      [][]string
+	width      int
+	height     int
+	colSep     int
+	rowSep     int
+	offx       int
+	rows       int
+	rowOff     int
+	offInc     int
+	cursorPos  int
+	data       []Row
+	sel        Selection
+	dataActive int
 }
 
 func newDrawArea(backColor [4]int, data [][]string) DrawArea {
 	var brush = qt.NewQBrush3(myQColor(backColor))
 
-	var area = DrawArea{qt.NewQGraphicsView2(), 0, 0, 0, 0, 0, len(data), 0, 0, 0, data}
+	rows := make([]Row, 0, 16)
+	for i, row := range data {
+		rows = append(rows, Row{ID: i, texts: row})
+	}
+
+	var area = DrawArea{qt.NewQGraphicsView2(), 0, 0, 0, 0, 0, len(data), 0, 0, 0, rows, newSelection(), -1}
 	area.colSep = 6
 	area.rowSep = 2
 	area.offInc = 2
@@ -113,6 +127,20 @@ func newDrawArea(backColor [4]int, data [][]string) DrawArea {
 	area.OnMouseDoubleClickEvent(func(super func(event *qt.QMouseEvent), event *qt.QMouseEvent) {
 		if onAreaDoubleClickEvent(&area, event) {
 			area.Draw()
+		}
+	})
+
+	area.OnKeyPressEvent(func(super func(event *qt.QKeyEvent), event *qt.QKeyEvent) {
+		if onKeyPressEvent(&centerArea, event) {
+			centerArea.Draw()
+		}
+	})
+
+	area.OnKeyReleaseEvent(func(super func(event *qt.QKeyEvent), event *qt.QKeyEvent) {
+		switch event.Key() {
+		case int(qt.Key_Control):
+			ModifierControl = qt.NoModifier
+		default:
 		}
 	})
 
@@ -237,9 +265,9 @@ func myQColor(color [4]int) *qt.QColor {
 }
 
 func (da *DrawArea) Draw() {
-	// if !showSongsList {
-	// 	return
-	// }
+	if !showDataTable {
+		return
+	}
 	w := da.width
 	h := da.height
 	fw := float64(w)
@@ -249,7 +277,7 @@ func (da *DrawArea) Draw() {
 	textPen := qt.NewQPen3(myQColor(textColor))
 	linePen := qt.NewQPen3(myQColor(lineColor))
 	cursorPen := qt.NewQPen3(myQColor(cursorColor))
-	// selPen := qt.NewQPen3(myQColor(selColor))
+	selPen := qt.NewQPen3(myQColor(selColor))
 
 	font := FontData.Font
 	fontw := float64(FontData.W)
@@ -325,16 +353,16 @@ func (da *DrawArea) Draw() {
 		if i == da.cursorPos {
 			drawRec(cursorPen, vpos)
 		}
-		// if slices.Contains(data.MySel.Elems, data.MyList.Songs[i].ID) {
-		// 	font.SetBold(true)
-		// 	drawRec(selPen, vpos)
-		// }
+		if slices.Contains(da.sel.Elems, da.data[i].ID) {
+			font.SetBold(true)
+			drawRec(selPen, vpos)
+		}
 
 		for j, col := range columns {
 			if !col.visible {
 				continue
 			}
-			putItem(col.width, da.data[i][j])
+			putItem(col.width, da.data[i].texts[j])
 			xpos += float64(col.width)*fontw + xsep
 		}
 		font.SetBold(false)

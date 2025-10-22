@@ -92,11 +92,11 @@ func onAreaPressEvent(area *DrawArea, event *qt.QMouseEvent) bool {
 		} else {
 			ypos := y/(FontData.H+area.rowSep) + area.rowOff - 1
 			if button == 2 {
-				// id := data.MyList.Songs[ypos].ID
-				// if !data.MySel.Push(id) {
-				// 	data.MySel.Remove(id)
-				// }
-				// return true
+				id := area.data[ypos].ID
+				if !area.sel.Push(id) {
+					area.sel.Remove(id)
+				}
+				return true
 			}
 			if ypos < len(area.data) {
 				switch modifiers {
@@ -104,12 +104,12 @@ func onAreaPressEvent(area *DrawArea, event *qt.QMouseEvent) bool {
 					area.cursorPos = ypos
 					return true
 				case qt.AltModifier:
-					// data.MySel.Clear()
-					// return true
+					area.sel.Clear()
+					return true
 				case qt.ShiftModifier:
-					// if !data.MySel.Push(ypos) {
-					// 	data.MySel.Remove(ypos)
-					// }
+					if !area.sel.Push(ypos) {
+						area.sel.Remove(ypos)
+					}
 					return true
 				default:
 				}
@@ -126,7 +126,7 @@ func onAreaDoubleClickEvent(area *DrawArea, event *qt.QMouseEvent) bool {
 	if y > FontData.H+area.rowSep && (x > area.offx && x < area.width-area.offx) {
 		position := y/(FontData.H+area.rowSep) + area.rowOff - 1
 		if position < len(area.data) {
-			// data.Active = position
+			area.dataActive = position
 			// updateSongLabels()
 		}
 		return true
