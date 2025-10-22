@@ -33,7 +33,7 @@ func NewFontData() MyFontData {
 	case "windows":
 		return MyFontData{qt.NewQFont6(DefFont, 10), 10, 0, 0}
 	case "linux", "freebsd":
-		return MyFontData{qt.NewQFont6(DefFont, 8), 8, 0, 0}
+		return MyFontData{qt.NewQFont6(DefFont, 10), 10, 0, 0}
 	default:
 		return MyFontData{qt.NewQFont6(DefFont, 10), 10, 0, 0}
 	}

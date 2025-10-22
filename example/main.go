@@ -1,5 +1,7 @@
 package main
 
+// go build -ldflags="-s -w"
+
 import (
 	// "fmt"
 	"os"
@@ -26,7 +28,6 @@ func initGui() {
 
 func mainWindow() {
 	window = qt.NewQMainWindow2()
-	window.SetMinimumSize2(450, 300)
 
 	vbox := qt.NewQVBoxLayout2()
 	winWidget := qt.NewQWidget2()

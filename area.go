@@ -3,7 +3,6 @@ package qtablam
 import (
 	// "fmt"
 	// "slices"
-	// "strconv"
 	"unicode/utf8"
 
 	"github.com/mappu/miqt/qt"
@@ -22,8 +21,7 @@ var (
 	pointingHandCursor *qt.QCursor
 	activeCursor       = arrowCursor
 
-	// areaBack    = [4]int{240, 240, 240, 255}
-	areaBack    = [4]int{24, 240, 240, 255}
+	areaBack    = [4]int{240, 240, 240, 255}
 	areaColor   = [4]int{250, 250, 250, 255}
 	lineColor   = [4]int{220, 220, 220, 255}
 	textColor   = [4]int{0, 0, 0, 255}
@@ -95,6 +93,29 @@ func newDrawArea(backColor [4]int, data [][]string) DrawArea {
 	area.SetFrameStyle(0)
 	area.SetBackgroundBrush(brush)
 
+	area.OnResizeEvent(func(super func(event *qt.QResizeEvent), event *qt.QResizeEvent) {
+		area.ResizeUpdate(event.Size().Width(), event.Size().Height())
+		area.Draw()
+	})
+	area.OnMouseMoveEvent(func(super func(event *qt.QMouseEvent), event *qt.QMouseEvent) {
+		onAreaMouseMoveEvent(area, event)
+	})
+	area.OnWheelEvent(func(super func(event *qt.QWheelEvent), event *qt.QWheelEvent) {
+		if onAreaWheelEvent(&area, event) {
+			area.Draw()
+		}
+	})
+	area.OnMousePressEvent(func(super func(event *qt.QMouseEvent), event *qt.QMouseEvent) {
+		if onAreaPressEvent(&area, event) {
+			area.Draw()
+		}
+	})
+	area.OnMouseDoubleClickEvent(func(super func(event *qt.QMouseEvent), event *qt.QMouseEvent) {
+		if onAreaDoubleClickEvent(&area, event) {
+			area.Draw()
+		}
+	})
+
 	return area
 }
 
@@ -114,6 +135,14 @@ func (da *DrawArea) UpdateColsWidth() {
 
 func (da *DrawArea) UpdateRows() {
 	da.rows = da.height / (FontData.H + da.rowSep)
+}
+
+func (da *DrawArea) SetCursorPosition(pos int) {
+	da.cursorPos = pos
+	da.rowOff = pos - da.rows/2
+	if da.rowOff < 0 {
+		da.rowOff = 0
+	}
 }
 
 func (da *DrawArea) ResizeUpdate(newWidth, newHeight int) {
