@@ -11,13 +11,13 @@ func NewQTablam(titles []string, data [][]string) *qt.QWidget {
 	arrowCursor = qt.NewQCursor2(qt.CursorShape(qt.ArrowCursor))
 	pointingHandCursor = qt.NewQCursor2(qt.CursorShape(qt.PointingHandCursor))
 
-	defFont = DefaultFont()
-	fontData = NewFontData()
+	DefFont = DefaultFont()
+	FontData = NewFontData()
 
 	// Draw area
 	initColumns(titles)
 	centerArea = newDrawArea(areaBack, data)
-	fontData.UpdateMetrics(centerArea.rowSep)
+	FontData.UpdateMetrics(centerArea.rowSep)
 
 	centerArea.SetCursor(arrowCursor)
 	fieldsMenu = initMenuFields()
