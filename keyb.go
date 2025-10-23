@@ -1,8 +1,6 @@
 package qtablam
 
 import (
-	// "unicode/utf8"
-
 	"github.com/mappu/miqt/qt"
 )
 
@@ -14,28 +12,7 @@ func onKeyPressEvent(area *DrawArea, event *qt.QKeyEvent) bool {
 	case int(qt.Key_Control):
 		ModifierControl = qt.ControlModifier
 	case int(qt.Key_Escape):
-		// if search.HasFocus() {
-		// 	search.Clear()
-		// 	search.ClearFocus()
-		// } else {
 		area.cursorPos = -1
-		refresh = true
-		// }
-	// case int(qt.Key_Space):
-	// 	if len(area.data) > 0 {
-	// 		if modifiers == qt.ControlModifier {
-	// 			onStopButton()
-	// 		} else {
-	// 			onPlayButton()
-	// 		}
-	// 	}
-	case int(qt.Key_F4):
-		showDataTable = !showDataTable
-		if showDataTable {
-			area.Show()
-		} else {
-			area.Hide()
-		}
 		refresh = true
 	case int(qt.Key_F5):
 		if modifiers == qt.ControlModifier {
@@ -101,22 +78,6 @@ func onKeyPressEvent(area *DrawArea, event *qt.QKeyEvent) bool {
 				// search.SetFocus()
 			default:
 			}
-		}
-	case int(qt.Key_U):
-		switch modifiers {
-		case qt.ControlModifier:
-			// onMainVolumeUpDown(true)
-		case qt.ShiftModifier:
-			// onSongGainUpDown(true)
-		default:
-		}
-	case int(qt.Key_D):
-		switch modifiers {
-		case qt.ControlModifier:
-			// onMainVolumeUpDown(false)
-		case qt.ShiftModifier:
-			// onSongGainUpDown(false)
-		default:
 		}
 	case int(qt.Key_Home), int(qt.Key_1):
 		area.GoInit()

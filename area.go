@@ -32,7 +32,6 @@ var (
 
 	fieldsMenu      *qt.QMenu
 	ModifierControl = qt.NoModifier
-	showDataTable   = true
 )
 
 type Column struct {
@@ -169,9 +168,32 @@ func (da *DrawArea) AddRow(texts []string) {
 	}
 }
 
+func (da *DrawArea) EditCell(row, col int, text string) {
+	if row < len(da.rows) && col < len(da.columns) {
+		da.rows[row].texts[col] = text
+		da.columns[col].updateWidth(text)
+		da.UpdateColsWidth()
+		da.Draw()
+	}
+}
+
+func (da *DrawArea) RowTexts(n int) []string {
+	texts := make([]string, 0, len(da.columns))
+	texts = append(texts, da.rows[n].texts...)
+	return texts
+}
+
+func (da *DrawArea) CellText(r, c int) string {
+	if r < len(da.rows) && c < len(da.columns) {
+		return da.rows[r].texts[c]
+	}
+	return ""
+}
+
 func (da *DrawArea) RemoveRow(n int) {
 	if n >= 0 && n < len(da.rows) {
 		da.rows = append(da.rows[:n], da.rows[n+1:]...)
+		da.cursorPos--
 		da.Draw()
 	}
 }
@@ -298,9 +320,6 @@ func myQColor(color [4]int) *qt.QColor {
 }
 
 func (da *DrawArea) Draw() {
-	if !showDataTable {
-		return
-	}
 	w := da.width
 	h := da.height
 	fw := float64(w)

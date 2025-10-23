@@ -3,7 +3,7 @@ package main
 // go build -ldflags="-s -w"
 
 import (
-	// "fmt"
+	"fmt"
 	"os"
 
 	"github.com/errz99/qtablam"
@@ -46,17 +46,31 @@ func mainWindow() {
 	area := qtablam.NewQTablam(titles, data)
 	vbox.AddWidget(area.QWidget)
 
-	buttonsBox := qt.NewQHBoxLayout2()
-	boxWidget := qt.NewQWidget2()
-	boxWidget.SetLayout(buttonsBox.QLayout)
-	vbox.AddWidget3(boxWidget, 0, qt.AlignBottom)
+	// Boxes
+	buttonsBox1 := qt.NewQHBoxLayout2()
+	buttonsBox1.SetContentsMargins(0, 0, 0, 0)
+	boxWidget1 := qt.NewQWidget2()
+	boxWidget1.SetLayout(buttonsBox1.QLayout)
+	vbox.AddWidget3(boxWidget1, 0, qt.AlignBottom)
 
+	buttonsBox2 := qt.NewQHBoxLayout2()
+	buttonsBox2.SetContentsMargins(0, 0, 0, 0)
+	boxWidget2 := qt.NewQWidget2()
+	boxWidget2.SetLayout(buttonsBox2.QLayout)
+	vbox.AddWidget3(boxWidget2, 0, qt.AlignBottom)
+
+	// Buttons 1
 	buttonOne := qt.NewQPushButton3("Add Row")
 	buttonOne.SetMinimumWidth(120)
-	buttonsBox.AddWidget3(buttonOne.QWidget, 0, qt.AlignCenter)
+	buttonsBox1.AddWidget3(buttonOne.QWidget, 0, qt.AlignCenter)
+
 	buttonTwo := qt.NewQPushButton3("Remove Row")
 	buttonTwo.SetMinimumWidth(120)
-	buttonsBox.AddWidget3(buttonTwo.QWidget, 0, qt.AlignCenter)
+	buttonsBox1.AddWidget3(buttonTwo.QWidget, 0, qt.AlignCenter)
+
+	buttonThree := qt.NewQPushButton3("Edit Cell")
+	buttonThree.SetMinimumWidth(120)
+	buttonsBox1.AddWidget3(buttonThree.QWidget, 0, qt.AlignCenter)
 
 	buttonOne.OnClicked(func() {
 		area.AddRow([]string{"Uno6", "Dos6", "Tres6", "Cuatro6", "Cinco6"})
@@ -65,6 +79,22 @@ func mainWindow() {
 	buttonTwo.OnClicked(func() {
 		// area.RemoveRow(0)
 		area.RemoveActiveRow()
+	})
+
+	buttonThree.OnClicked(func() {
+		area.EditCell(0, 0, "Cambio!")
+	})
+
+	// Buttons 2
+	buttonFour := qt.NewQPushButton3("Row Texts")
+	buttonFour.SetMinimumWidth(120)
+	buttonsBox2.AddWidget3(buttonFour.QWidget, 0, qt.AlignCenter)
+
+	buttonFour.OnClicked(func() {
+		texts := area.RowTexts(0)
+		fmt.Println(texts)
+		text := area.CellText(1, 2)
+		fmt.Println(text)
 	})
 
 	window.Show()
