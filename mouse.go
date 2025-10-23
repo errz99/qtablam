@@ -6,7 +6,7 @@ import (
 	"github.com/mappu/miqt/qt"
 )
 
-func onAreaMouseMoveEvent(area DrawArea, event *qt.QMouseEvent) {
+func onAreaMouseMoveEvent(area *DrawArea, event *qt.QMouseEvent) {
 	x := event.X()
 	y := event.Y()
 	fw := FontData.W

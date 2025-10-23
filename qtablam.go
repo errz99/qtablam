@@ -7,7 +7,7 @@ import (
 	"github.com/mappu/miqt/qt"
 )
 
-func NewQTablam(titles []string, data [][]string) *qt.QWidget {
+func NewQTablam(titles []string, data [][]string) *DrawArea {
 	arrowCursor = qt.NewQCursor2(qt.CursorShape(qt.ArrowCursor))
 	pointingHandCursor = qt.NewQCursor2(qt.CursorShape(qt.PointingHandCursor))
 
@@ -15,12 +15,11 @@ func NewQTablam(titles []string, data [][]string) *qt.QWidget {
 	FontData = NewFontData()
 
 	// Draw area
-	centerArea := newDrawArea(titles, data)
-	FontData.UpdateMetrics(centerArea.rowSep)
+	area := newDrawArea(titles, data)
+	FontData.UpdateMetrics(area.rowSep)
 
-	centerArea.SetCursor(arrowCursor)
-	fieldsMenu = initMenuFields(centerArea.columns)
+	area.SetCursor(arrowCursor)
+	fieldsMenu = initMenuFields(area.columns)
 
-	centerArea.Draw()
-	return centerArea.QWidget
+	return area
 }

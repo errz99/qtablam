@@ -43,7 +43,29 @@ func mainWindow() {
 		{"Uno5", "Dos5", "Tres5", "Cuatro5", "Cinco5"},
 	}
 
-	vbox.AddWidget3(qtablam.NewQTablam(titles, data), 0, qt.AlignTop)
+	area := qtablam.NewQTablam(titles, data)
+	vbox.AddWidget(area.QWidget)
+
+	buttonsBox := qt.NewQHBoxLayout2()
+	boxWidget := qt.NewQWidget2()
+	boxWidget.SetLayout(buttonsBox.QLayout)
+	vbox.AddWidget3(boxWidget, 0, qt.AlignBottom)
+
+	buttonOne := qt.NewQPushButton3("Add Row")
+	buttonOne.SetMinimumWidth(120)
+	buttonsBox.AddWidget3(buttonOne.QWidget, 0, qt.AlignCenter)
+	buttonTwo := qt.NewQPushButton3("Remove Row")
+	buttonTwo.SetMinimumWidth(120)
+	buttonsBox.AddWidget3(buttonTwo.QWidget, 0, qt.AlignCenter)
+
+	buttonOne.OnClicked(func() {
+		area.AddRow([]string{"Uno6", "Dos6", "Tres6", "Cuatro6", "Cinco6"})
+	})
+
+	buttonTwo.OnClicked(func() {
+		// area.RemoveRow(0)
+		area.RemoveActiveRow()
+	})
 
 	window.Show()
 }

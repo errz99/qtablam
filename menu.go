@@ -4,6 +4,11 @@ import (
 	"github.com/mappu/miqt/qt"
 )
 
+var (
+	pColumns *[]Column
+	pArea    *DrawArea
+)
+
 func initMenuFields(columns []Column) *qt.QMenu {
 	fieldsMenu := qt.NewQMenu3("F&ields")
 

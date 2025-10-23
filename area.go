@@ -30,9 +30,6 @@ var (
 	DefFont  string
 	FontData MyFontData
 
-	pColumns *[]Column
-	pArea    *DrawArea
-
 	fieldsMenu      *qt.QMenu
 	ModifierControl = qt.NoModifier
 	showDataTable   = true
@@ -83,7 +80,7 @@ type DrawArea struct {
 	dataActive int
 }
 
-func newDrawArea(titles []string, data [][]string) DrawArea {
+func newDrawArea(titles []string, data [][]string) *DrawArea {
 	var brush = qt.NewQBrush3(myQColor(areaBack))
 
 	// Init columns
@@ -127,7 +124,7 @@ func newDrawArea(titles []string, data [][]string) DrawArea {
 		area.Draw()
 	})
 	area.OnMouseMoveEvent(func(super func(event *qt.QMouseEvent), event *qt.QMouseEvent) {
-		onAreaMouseMoveEvent(area, event)
+		onAreaMouseMoveEvent(&area, event)
 	})
 	area.OnWheelEvent(func(super func(event *qt.QWheelEvent), event *qt.QWheelEvent) {
 		if onAreaWheelEvent(&area, event) {
@@ -159,7 +156,28 @@ func newDrawArea(titles []string, data [][]string) DrawArea {
 		}
 	})
 
-	return area
+	return &area
+}
+
+func (da *DrawArea) AddRow(texts []string) {
+	if len(texts) == len(da.columns) {
+		for j := range len(da.columns) {
+			da.columns[j].updateWidth(texts[j])
+		}
+		da.rows = append(da.rows, Row{ID: len(da.rows), texts: texts})
+		da.Draw()
+	}
+}
+
+func (da *DrawArea) RemoveRow(n int) {
+	if n >= 0 && n < len(da.rows) {
+		da.rows = append(da.rows[:n], da.rows[n+1:]...)
+		da.Draw()
+	}
+}
+
+func (da *DrawArea) RemoveActiveRow() {
+	da.RemoveRow(da.cursorPos)
 }
 
 func (da *DrawArea) UpdateColsWidth() {
