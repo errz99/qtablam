@@ -15,12 +15,11 @@ func NewQTablam(titles []string, data [][]string) *qt.QWidget {
 	FontData = NewFontData()
 
 	// Draw area
-	initColumns(titles)
-	centerArea = newDrawArea(areaBack, data)
+	centerArea := newDrawArea(titles, data)
 	FontData.UpdateMetrics(centerArea.rowSep)
 
 	centerArea.SetCursor(arrowCursor)
-	fieldsMenu = initMenuFields()
+	fieldsMenu = initMenuFields(centerArea.columns)
 
 	centerArea.Draw()
 	return centerArea.QWidget

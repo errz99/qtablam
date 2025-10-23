@@ -15,7 +15,6 @@ const (
 
 var (
 	pointedColumn *Column
-	centerArea    DrawArea
 
 	arrowCursor        *qt.QCursor
 	pointingHandCursor *qt.QCursor
@@ -31,7 +30,9 @@ var (
 	DefFont  string
 	FontData MyFontData
 
-	columns         = make([]Column, 0, 8)
+	pColumns *[]Column
+	pArea    *DrawArea
+
 	fieldsMenu      *qt.QMenu
 	ModifierControl = qt.NoModifier
 	showDataTable   = true
@@ -42,23 +43,21 @@ type Column struct {
 	width     int
 	visible   bool
 	resizable bool
-	texts     []string
 }
 
-func newColumn(title string, width int) Column {
-	texts := make([]string, 0)
+func newColumn(title string) Column {
 	return Column{
 		title:     title,
-		width:     width,
+		width:     utf8.RuneCountInString(title),
 		visible:   true,
 		resizable: true,
-		texts:     texts,
 	}
 }
 
-func initColumns(titles []string) {
-	for _, title := range titles {
-		columns = append(columns, newColumn(title, len(title)+5))
+func (c *Column) updateWidth(text string) {
+	textWidth := utf8.RuneCountInString(text)
+	if textWidth > c.width {
+		c.width = textWidth
 	}
 }
 
@@ -74,28 +73,44 @@ type DrawArea struct {
 	colSep     int
 	rowSep     int
 	offx       int
-	rows       int
+	totalRows  int
 	rowOff     int
 	offInc     int
 	cursorPos  int
-	data       []Row
+	columns    []Column
+	rows       []Row
 	sel        Selection
 	dataActive int
 }
 
-func newDrawArea(backColor [4]int, data [][]string) DrawArea {
-	var brush = qt.NewQBrush3(myQColor(backColor))
+func newDrawArea(titles []string, data [][]string) DrawArea {
+	var brush = qt.NewQBrush3(myQColor(areaBack))
 
-	rows := make([]Row, 0, 16)
-	for i, row := range data {
-		rows = append(rows, Row{ID: i, texts: row})
+	// Init columns
+	columns := make([]Column, 0, len(titles))
+	for _, title := range titles {
+		columns = append(columns, newColumn(title))
+	}
+	pColumns = &columns
+
+	// Init rows
+	rows := make([]Row, 0, len(data))
+	for i, texts := range data {
+		for j := range len(columns) {
+			columns[j].updateWidth(texts[j])
+		}
+		rows = append(rows, Row{ID: i, texts: texts})
 	}
 
-	var area = DrawArea{qt.NewQGraphicsView2(), 0, 0, 0, 0, 0, len(data), 0, 0, 0, rows, newSelection(), -1}
+	var area = DrawArea{qt.NewQGraphicsView2(),
+		0, 0, 0, 0, 0, len(data), 0, 0, 0,
+		columns, rows, newSelection(), -1,
+	}
 	area.colSep = 6
 	area.rowSep = 2
 	area.offInc = 2
 	area.cursorPos = -1
+	pArea = &area
 
 	var scene = qt.NewQGraphicsScene()
 	area.SetScene(scene)
@@ -131,8 +146,8 @@ func newDrawArea(backColor [4]int, data [][]string) DrawArea {
 	})
 
 	area.OnKeyPressEvent(func(super func(event *qt.QKeyEvent), event *qt.QKeyEvent) {
-		if onKeyPressEvent(&centerArea, event) {
-			centerArea.Draw()
+		if onKeyPressEvent(&area, event) {
+			area.Draw()
 		}
 	})
 
@@ -149,9 +164,9 @@ func newDrawArea(backColor [4]int, data [][]string) DrawArea {
 
 func (da *DrawArea) UpdateColsWidth() {
 	var colsWidth int
-	for _, col := range columns {
+	for _, col := range da.columns {
 		if col.visible {
-			colsWidth += col.width*FontData.W + centerArea.colSep
+			colsWidth += col.width*FontData.W + da.colSep
 		}
 	}
 	if colsWidth < da.width {
@@ -162,12 +177,12 @@ func (da *DrawArea) UpdateColsWidth() {
 }
 
 func (da *DrawArea) UpdateRows() {
-	da.rows = da.height / (FontData.H + da.rowSep)
+	da.totalRows = da.height / (FontData.H + da.rowSep)
 }
 
 func (da *DrawArea) SetCursorPosition(pos int) {
 	da.cursorPos = pos
-	da.rowOff = pos - da.rows/2
+	da.rowOff = pos - da.totalRows/2
 	if da.rowOff < 0 {
 		da.rowOff = 0
 	}
@@ -184,7 +199,7 @@ func (da *DrawArea) ResizeUpdate(newWidth, newHeight int) {
 
 func (da *DrawArea) IncRowOff() {
 	for i := da.offInc; i > 0; i-- {
-		if da.rowOff < len(da.data)-(i-1) {
+		if da.rowOff < len(da.rows)-(i-1) {
 			da.rowOff++
 		}
 	}
@@ -199,12 +214,12 @@ func (da *DrawArea) DecRowOff() {
 }
 
 func (da *DrawArea) IncCursor() bool {
-	if da.cursorPos < da.rowOff || da.cursorPos > da.rowOff+da.rows {
+	if da.cursorPos < da.rowOff || da.cursorPos > da.rowOff+da.totalRows {
 		da.cursorPos = da.rowOff
 		return true
-	} else if da.cursorPos < len(da.data)-1 {
+	} else if da.cursorPos < len(da.rows)-1 {
 		da.cursorPos++
-		if da.cursorPos > da.rows-2 && da.rowOff < len(da.data)-da.rows*3/4 {
+		if da.cursorPos > da.totalRows-2 && da.rowOff < len(da.rows)-da.totalRows*3/4 {
 			da.rowOff++
 		}
 		return true
@@ -213,8 +228,8 @@ func (da *DrawArea) IncCursor() bool {
 }
 
 func (da *DrawArea) DecCursor() bool {
-	if da.cursorPos < da.rowOff || da.cursorPos > da.rowOff+da.rows {
-		da.cursorPos = da.rowOff + da.rows - 1
+	if da.cursorPos < da.rowOff || da.cursorPos > da.rowOff+da.totalRows {
+		da.cursorPos = da.rowOff + da.totalRows - 1
 		return true
 	} else if da.cursorPos > 0 {
 		da.cursorPos--
@@ -229,19 +244,19 @@ func (da *DrawArea) DecCursor() bool {
 }
 
 func (da *DrawArea) IncPage() bool {
-	if da.rowOff <= len(da.data)-da.rows {
-		da.rowOff += da.rows
+	if da.rowOff <= len(da.rows)-da.totalRows {
+		da.rowOff += da.totalRows
 		return true
-	} else if da.cursorPos < len(da.data)-1 {
-		da.cursorPos = len(da.data) - 1
+	} else if da.cursorPos < len(da.rows)-1 {
+		da.cursorPos = len(da.rows) - 1
 		return true
 	}
 	return false
 }
 
 func (da *DrawArea) DecPage() bool {
-	if da.rowOff >= da.rows {
-		da.rowOff -= da.rows
+	if da.rowOff >= da.totalRows {
+		da.rowOff -= da.totalRows
 		return true
 	} else if da.cursorPos > 0 {
 		da.cursorPos = 0
@@ -256,8 +271,8 @@ func (da *DrawArea) GoInit() {
 }
 
 func (da *DrawArea) GoEnd() {
-	da.rowOff = (len(da.data) + 1) - da.rows
-	da.cursorPos = len(da.data) - 1
+	da.rowOff = (len(da.rows) + 1) - da.totalRows
+	da.cursorPos = len(da.rows) - 1
 }
 
 func myQColor(color [4]int) *qt.QColor {
@@ -310,7 +325,7 @@ func (da *DrawArea) Draw() {
 	// Header
 	font.SetBold(true)
 
-	for i, col := range columns {
+	for i, col := range da.columns {
 		if col.visible {
 			if i > 0 {
 				scene.AddLine4(xpos, 0, xpos, fh, linePen)
@@ -343,26 +358,26 @@ func (da *DrawArea) Draw() {
 		scene.AddRect6(offx, y, float64(da.width)-offx*2, h, pen, pen.Brush())
 	}
 
-	for i := da.rowOff; i < len(da.data); i++ {
+	for i := da.rowOff; i < len(da.rows); i++ {
 		xpos = offx
 		vpos += fonth + ysep
-		if i == da.rows+da.rowOff {
+		if i == da.totalRows+da.rowOff {
 			break
 		}
 
 		if i == da.cursorPos {
 			drawRec(cursorPen, vpos)
 		}
-		if slices.Contains(da.sel.Elems, da.data[i].ID) {
+		if slices.Contains(da.sel.Elems, da.rows[i].ID) {
 			font.SetBold(true)
 			drawRec(selPen, vpos)
 		}
 
-		for j, col := range columns {
+		for j, col := range da.columns {
 			if !col.visible {
 				continue
 			}
-			putItem(col.width, da.data[i].texts[j])
+			putItem(col.width, da.rows[i].texts[j])
 			xpos += float64(col.width)*fontw + xsep
 		}
 		font.SetBold(false)

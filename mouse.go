@@ -15,7 +15,7 @@ func onAreaMouseMoveEvent(area DrawArea, event *qt.QMouseEvent) {
 		if y < FontData.H+area.rowSep {
 			total := area.offx
 			res := -1
-			for i, col := range columns {
+			for i, col := range area.columns {
 				if col.visible {
 					total += col.width*fw + area.colSep
 					res = i
@@ -26,15 +26,15 @@ func onAreaMouseMoveEvent(area DrawArea, event *qt.QMouseEvent) {
 			}
 			if activeCursor != pointingHandCursor {
 				activeCursor = pointingHandCursor
-				centerArea.SetCursor(pointingHandCursor)
+				area.SetCursor(pointingHandCursor)
 			}
 			if res >= 0 {
-				pointedColumn = &columns[res]
+				pointedColumn = &area.columns[res]
 			}
 		} else {
 			if activeCursor != arrowCursor {
 				activeCursor = arrowCursor
-				centerArea.SetCursor(arrowCursor)
+				area.SetCursor(arrowCursor)
 				pointedColumn = nil
 			}
 		}
@@ -92,13 +92,15 @@ func onAreaPressEvent(area *DrawArea, event *qt.QMouseEvent) bool {
 		} else {
 			ypos := y/(FontData.H+area.rowSep) + area.rowOff - 1
 			if button == 2 {
-				id := area.data[ypos].ID
-				if !area.sel.Push(id) {
-					area.sel.Remove(id)
+				if len(area.rows) > 0 {
+					id := area.rows[ypos].ID
+					if !area.sel.Push(id) {
+						area.sel.Remove(id)
+					}
+					return true
 				}
-				return true
 			}
-			if ypos < len(area.data) {
+			if ypos < len(area.rows) {
 				switch modifiers {
 				case qt.NoModifier:
 					area.cursorPos = ypos
@@ -125,7 +127,7 @@ func onAreaDoubleClickEvent(area *DrawArea, event *qt.QMouseEvent) bool {
 
 	if y > FontData.H+area.rowSep && (x > area.offx && x < area.width-area.offx) {
 		position := y/(FontData.H+area.rowSep) + area.rowOff - 1
-		if position < len(area.data) {
+		if position < len(area.rows) {
 			area.dataActive = position
 			// updateSongLabels()
 		}

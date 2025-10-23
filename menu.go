@@ -4,7 +4,7 @@ import (
 	"github.com/mappu/miqt/qt"
 )
 
-func initMenuFields() *qt.QMenu {
+func initMenuFields(columns []Column) *qt.QMenu {
 	fieldsMenu := qt.NewQMenu3("F&ields")
 
 	titles := make([]string, 0, 16)
@@ -33,17 +33,17 @@ func onFieldsMenu() {
 	actions := fieldsMenu.Actions()
 	noVisibles := true
 	for i, action := range actions {
-		columns[i].visible = action.IsChecked()
-		if columns[i].visible {
+		(*pColumns)[i].visible = action.IsChecked()
+		if (*pColumns)[i].visible {
 			noVisibles = false
 		}
 	}
 	if noVisibles {
 		actions[0].SetChecked(true)
-		columns[0].visible = true
+		(*pColumns)[0].visible = true
 	}
-	centerArea.UpdateColsWidth()
-	centerArea.Draw()
+	(*pArea).UpdateColsWidth()
+	(*pArea).Draw()
 }
 
 func prepareMenu(menu *qt.QMenu, titles, shorts, icons []string, cbs []func()) {

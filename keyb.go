@@ -32,34 +32,34 @@ func onKeyPressEvent(area *DrawArea, event *qt.QKeyEvent) bool {
 	case int(qt.Key_F4):
 		showDataTable = !showDataTable
 		if showDataTable {
-			centerArea.Show()
+			area.Show()
 		} else {
-			centerArea.Hide()
+			area.Hide()
 		}
 		refresh = true
 	case int(qt.Key_F5):
 		if modifiers == qt.ControlModifier {
 			if area.rowSep > 0 {
 				area.rowSep--
-				centerArea.UpdateRows()
+				area.UpdateRows()
 				refresh = true
 			}
 		} else {
-			if FontData.UpdateSize(-1) {
-				centerArea.UpdateColsWidth()
-				centerArea.UpdateRows()
+			if FontData.UpdateSize(area.rowSep, -1) {
+				area.UpdateColsWidth()
+				area.UpdateRows()
 				refresh = true
 			}
 		}
 	case int(qt.Key_F6):
 		if modifiers == qt.ControlModifier {
 			area.rowSep++
-			centerArea.UpdateRows()
+			area.UpdateRows()
 			refresh = true
 		} else {
-			if FontData.UpdateSize(1) {
-				centerArea.UpdateColsWidth()
-				centerArea.UpdateRows()
+			if FontData.UpdateSize(area.rowSep, 1) {
+				area.UpdateColsWidth()
+				area.UpdateRows()
 				refresh = true
 			}
 		}
@@ -77,17 +77,17 @@ func onKeyPressEvent(area *DrawArea, event *qt.QKeyEvent) bool {
 		}
 	case int(qt.Key_A):
 		if modifiers == qt.ControlModifier {
-			if len(area.data) > 0 {
+			if len(area.rows) > 0 {
 				area.dataActive = area.cursorPos
 				// updateSongLabels()
 				refresh = true
 			}
 		}
 	case int(qt.Key_L):
-		if len(area.data) > 0 {
+		if len(area.rows) > 0 {
 			switch modifiers {
 			case qt.ShiftModifier:
-				id := area.data[area.cursorPos].ID
+				id := area.rows[area.cursorPos].ID
 				if !area.sel.Push(id) {
 					area.sel.Remove(id)
 				}

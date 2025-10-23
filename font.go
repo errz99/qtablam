@@ -45,11 +45,11 @@ func (fd *MyFontData) UpdateMetrics(rowSep int) {
 	fd.H = metrics.Height() + rowSep*2
 }
 
-func (fd *MyFontData) UpdateSize(amount int) bool {
+func (fd *MyFontData) UpdateSize(rowSep, amount int) bool {
 	if fd.Size+amount >= 4 {
 		fd.Size += amount
 		fd.Font = qt.NewQFont6(DefFont, fd.Size)
-		fd.UpdateMetrics(centerArea.rowSep)
+		fd.UpdateMetrics(rowSep)
 		return true
 	}
 	return false
