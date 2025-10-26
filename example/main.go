@@ -60,15 +60,15 @@ func mainWindow() {
 	vbox.AddWidget3(boxWidget2, 0, qt.AlignBottom)
 
 	// Buttons 1
-	buttonOne := qt.NewQPushButton3("Add Row")
+	buttonOne := qt.NewQPushButton3("&Add Row")
 	buttonOne.SetMinimumWidth(120)
 	buttonsBox1.AddWidget3(buttonOne.QWidget, 0, qt.AlignCenter)
 
-	buttonTwo := qt.NewQPushButton3("Remove Row")
+	buttonTwo := qt.NewQPushButton3("&Remove Row")
 	buttonTwo.SetMinimumWidth(120)
 	buttonsBox1.AddWidget3(buttonTwo.QWidget, 0, qt.AlignCenter)
 
-	buttonThree := qt.NewQPushButton3("Edit Cell")
+	buttonThree := qt.NewQPushButton3("&Edit Cell")
 	buttonThree.SetMinimumWidth(120)
 	buttonsBox1.AddWidget3(buttonThree.QWidget, 0, qt.AlignCenter)
 
@@ -86,7 +86,7 @@ func mainWindow() {
 	})
 
 	// Buttons 2
-	buttonFour := qt.NewQPushButton3("Row Texts")
+	buttonFour := qt.NewQPushButton3("R&ow Texts")
 	buttonFour.SetMinimumWidth(120)
 	buttonsBox2.AddWidget3(buttonFour.QWidget, 0, qt.AlignCenter)
 

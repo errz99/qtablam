@@ -53,13 +53,13 @@ func onKeyPressEvent(area *DrawArea, event *qt.QKeyEvent) bool {
 			refresh = area.DecPage()
 		}
 	case int(qt.Key_A):
-		if modifiers == qt.ControlModifier {
-			if len(area.rows) > 0 {
-				area.dataActive = area.cursorPos
-				// updateSongLabels()
-				refresh = true
-			}
-		}
+		// if modifiers == qt.ControlModifier {
+		// 	if len(area.rows) > 0 {
+		// 		// area.dataActive = area.cursorPos
+		// 		// updateSongLabels()
+		// 		refresh = true
+		// 	}
+		// }
 	case int(qt.Key_L):
 		if len(area.rows) > 0 {
 			switch modifiers {

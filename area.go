@@ -64,19 +64,18 @@ type Row struct {
 
 type DrawArea struct {
 	*qt.QGraphicsView
-	width      int
-	height     int
-	colSep     int
-	rowSep     int
-	offx       int
-	totalRows  int
-	rowOff     int
-	offInc     int
-	cursorPos  int
-	columns    []Column
-	rows       []Row
-	sel        Selection
-	dataActive int
+	width       int
+	height      int
+	colSep      int
+	rowSep      int
+	offx        int
+	visibleRows int
+	rowOff      int
+	offInc      int
+	cursorPos   int
+	columns     []Column
+	rows        []Row
+	sel         Selection
 }
 
 func newDrawArea(titles []string, data [][]string) *DrawArea {
@@ -100,7 +99,7 @@ func newDrawArea(titles []string, data [][]string) *DrawArea {
 
 	var area = DrawArea{qt.NewQGraphicsView2(),
 		0, 0, 0, 0, 0, len(data), 0, 0, 0,
-		columns, rows, newSelection(), -1,
+		columns, rows, newSelection(),
 	}
 	area.colSep = 6
 	area.rowSep = 2
@@ -193,7 +192,11 @@ func (da *DrawArea) CellText(r, c int) string {
 func (da *DrawArea) RemoveRow(n int) {
 	if n >= 0 && n < len(da.rows) {
 		da.rows = append(da.rows[:n], da.rows[n+1:]...)
-		da.cursorPos--
+		if da.cursorPos >= len(da.rows) {
+			da.cursorPos--
+		} else if len(da.rows) == 0 {
+			da.cursorPos = -1
+		}
 		da.Draw()
 	}
 }
@@ -217,12 +220,12 @@ func (da *DrawArea) UpdateColsWidth() {
 }
 
 func (da *DrawArea) UpdateRows() {
-	da.totalRows = da.height / (FontData.H + da.rowSep)
+	da.visibleRows = da.height / (FontData.H + da.rowSep)
 }
 
 func (da *DrawArea) SetCursorPosition(pos int) {
 	da.cursorPos = pos
-	da.rowOff = pos - da.totalRows/2
+	da.rowOff = pos - da.visibleRows/2
 	if da.rowOff < 0 {
 		da.rowOff = 0
 	}
@@ -254,12 +257,12 @@ func (da *DrawArea) DecRowOff() {
 }
 
 func (da *DrawArea) IncCursor() bool {
-	if da.cursorPos < da.rowOff || da.cursorPos > da.rowOff+da.totalRows {
+	if da.cursorPos < da.rowOff || da.cursorPos > da.rowOff+da.visibleRows {
 		da.cursorPos = da.rowOff
 		return true
 	} else if da.cursorPos < len(da.rows)-1 {
 		da.cursorPos++
-		if da.cursorPos > da.totalRows-2 && da.rowOff < len(da.rows)-da.totalRows*3/4 {
+		if da.cursorPos > da.visibleRows-2 && da.rowOff < len(da.rows)-da.visibleRows*3/4 {
 			da.rowOff++
 		}
 		return true
@@ -268,8 +271,8 @@ func (da *DrawArea) IncCursor() bool {
 }
 
 func (da *DrawArea) DecCursor() bool {
-	if da.cursorPos < da.rowOff || da.cursorPos > da.rowOff+da.totalRows {
-		da.cursorPos = da.rowOff + da.totalRows - 1
+	if da.cursorPos < da.rowOff || da.cursorPos > da.rowOff+da.visibleRows {
+		da.cursorPos = da.rowOff + da.visibleRows - 1
 		return true
 	} else if da.cursorPos > 0 {
 		da.cursorPos--
@@ -284,8 +287,8 @@ func (da *DrawArea) DecCursor() bool {
 }
 
 func (da *DrawArea) IncPage() bool {
-	if da.rowOff <= len(da.rows)-da.totalRows {
-		da.rowOff += da.totalRows
+	if da.rowOff <= len(da.rows)-da.visibleRows {
+		da.rowOff += da.visibleRows
 		return true
 	} else if da.cursorPos < len(da.rows)-1 {
 		da.cursorPos = len(da.rows) - 1
@@ -295,8 +298,8 @@ func (da *DrawArea) IncPage() bool {
 }
 
 func (da *DrawArea) DecPage() bool {
-	if da.rowOff >= da.totalRows {
-		da.rowOff -= da.totalRows
+	if da.rowOff >= da.visibleRows {
+		da.rowOff -= da.visibleRows
 		return true
 	} else if da.cursorPos > 0 {
 		da.cursorPos = 0
@@ -311,7 +314,7 @@ func (da *DrawArea) GoInit() {
 }
 
 func (da *DrawArea) GoEnd() {
-	da.rowOff = (len(da.rows) + 1) - da.totalRows
+	da.rowOff = (len(da.rows) + 1) - da.visibleRows
 	da.cursorPos = len(da.rows) - 1
 }
 
@@ -398,7 +401,7 @@ func (da *DrawArea) Draw() {
 	for i := da.rowOff; i < len(da.rows); i++ {
 		xpos = offx
 		vpos += fonth + ysep
-		if i == da.totalRows+da.rowOff {
+		if i == da.visibleRows+da.rowOff {
 			break
 		}
 

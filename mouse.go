@@ -1,6 +1,7 @@
 package qtablam
 
 import (
+	"fmt"
 	"unicode/utf8"
 
 	"github.com/mappu/miqt/qt"
@@ -128,7 +129,8 @@ func onAreaDoubleClickEvent(area *DrawArea, event *qt.QMouseEvent) bool {
 	if y > FontData.H+area.rowSep && (x > area.offx && x < area.width-area.offx) {
 		position := y/(FontData.H+area.rowSep) + area.rowOff - 1
 		if position < len(area.rows) {
-			area.dataActive = position
+			fmt.Println("position:", position)
+			// area.dataActive = position
 			// updateSongLabels()
 		}
 		return true
